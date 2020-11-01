@@ -1,0 +1,258 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html" />
+<link rel="import" href="../../../bower_components/iron-icons/communication-icons.html" />
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html" />
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html" />
+<link rel="import" href="../../../bower_components/paper-listbox/paper-listbox.html" />
+<link rel="import" href="../../../bower_components/paper-item/paper-icon-item.html" />
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../../../bower_components/paper-header-panel/paper-header-panel.html" />
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html" />
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html" />
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html" />
+<link rel="import" href="../../weecollab-common/profile-img.html" />
+<link rel="import" href="callout-bubble.html" />
+
+<dom-module id="chat-box">
+  <style>
+    :host {
+      display: block;
+      height: 100%;
+      /*position: relative;*/
+      font-family: 'Roboto', 'Noto', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      /*@apply(--layout-flex);*/
+    }
+    
+    :host:hover {
+      cursor: pointer;
+    }
+
+    .snippet {
+      @apply(--layout-flex);
+      /*margin-left: 10px;
+      margin-right: 10px;
+      border: solid 0px blue;
+      font-weight: 400;*/
+    }
+
+
+    .body-tall {
+      height: 400px;
+      display: flex;
+      /*padding-left: 10px;
+      padding-right: 10px;*/
+      @apply(--layout-vertical);
+    }
+
+    .body-short {
+      display: none;
+      /*padding-left: 10px;
+      padding-right: 10px;*/
+      @apply(--layout-fit);
+    }
+
+    .flex-child {
+      @apply(--layout-flex);
+    }
+
+    .flex-horiz {
+      @apply(--layout-horizontal);
+    }
+
+    paper-button.indigo {
+      background-color: var(--paper-indigo-500);
+      @apply(--layout-self-center);
+      color: white;
+      height: 40px;
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+    }
+
+    .avatar {
+        display: inline-block;
+        box-sizing: border-box;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--paper-amber-500);
+      }
+
+      div[role="listbox"] {
+        border: 1px solid #e5e5e5;
+      }
+
+      .messages {
+        overflow: auto;
+      }
+
+      .body {
+        margin: 10px 10px 10px 10px;
+      }
+
+      paper-item.fancy {
+        --paper-item-focused: {
+          background: var(--paper-amber-500);
+        }
+        font-weight: bold;
+      }
+
+      --paper-item-focused-before: {
+        opacity: 0;
+      }
+
+      #top {
+        position: relative;
+        width: 100%;
+      }
+
+      .container {
+        /*position: absolute;*/
+      }
+  </style>
+  <template>
+    <div id="top">
+        <div class="container" id="container">
+          <div id="listbox" role="listbox" on-tap="onTapHeader">
+            <paper-icon-item>
+              <div class="avatar blue" item-icon></div>
+              <paper-item-body id="snippet" class="snippet" two-line>
+                <div>[[chat.user]]</div>
+                <div secondary>[[chat.date]]</div>
+              </paper-item-body>
+              <paper-icon-button style="color: green" id="notifIcon" icon="communication:chat-bubble-outline" alt="New messages">
+              </paper-icon-button>
+            </paper-icon-item>
+          </div>
+          <div id="body" class="body body-short" dim on-tap="onTapBody">
+            <div id="messages" class="messages flex-child">
+              <template is="dom-repeat" items="[[messages]]">
+                <callout-bubble color="[[getColor(item.type)]]" orient="[[getOrient(item.type)]]" message="[[item.message]]" date="[[item.date]]"></callout-bubble>
+              </template>
+            </div>
+            <div class="flex-horiz">
+              <paper-input class="flex-child" id="msgTxt" placeholder="Enter the message"></paper-input>
+              <paper-button raised class="indigo" on-click="onSend">Send<iron-icon icon="send"></iron-icon></paper-button>
+            </div>
+          </div>
+        </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: "chat-box",
+      inFocus: false,
+      properties: {
+        chat: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+        messages: {
+          type: Array,
+          notify: true,
+          value: []
+        },
+        selected: {
+          type: Boolean,
+          value: false,
+          reflect: true
+        },
+        unread: false
+      },
+      ready: function() {
+        this.messages = [];
+      },
+      onFocus() {
+        this.inFocus = true;
+      },
+      onBlur() {
+          this.inFocus = false;
+          this.shrink();
+      },
+      getColor: function(type) {
+        return type === 'send' ? 'violet' : 'orange';
+      },
+      getOrient: function(type) {
+        return type === 'send' ? 'right' : 'left';
+      },
+      findChatItem: function(email) {
+        var id = email.substring(0, email.indexOf('@')).replace('.', '_');
+        return this.$$('#' + id);
+      },
+      isUnread: function() {
+          return this.unread;
+      },
+      post: function(from, msg, date) {
+        this.push('messages', {type: 'receive', message: msg, date: date});
+        this.$.messages.scrollTop = this.$.messages.scrollHeight;
+        this.async(function() {
+          if(!this.inFocus)
+            this.onUnreadMessage();
+          this.$.messages.scrollTop = this.$.messages.scrollHeight;
+        });
+      },
+      onUnreadMessage: function() {
+        this.$.notifIcon.icon = 'communication:chat-bubble';
+        this.unread = true;
+      },
+      onReadMessage: function() {
+        this.$.notifIcon.icon = 'communication:chat-bubble-outline';
+        this.unread = false;
+      },
+      onSend: function(e) {
+        var cli = document.getElementById('ws-client');
+        var msg = this.$$('#msgTxt').value;
+        if(msg !== '' && msg !== undefined && msg !== null) {
+          cli.send(JSON.stringify({to: this.chat.user, msg: msg}));
+          this.push('messages', {type: 'send', message: msg, date: '12:43 PM'});
+          this.async(function() {
+            this.$.messages.scrollTop = this.$.messages.scrollHeight;
+          });
+          this.$$('#msgTxt').value = '';
+        }
+      },
+      expand: function() {
+        var elm = this.$$('#body');
+        if(elm.classList.contains('body-short')) {
+          elm.classList.remove('body-short');
+          elm.classList.add('body-tall');
+        }
+        this.$.messages.scrollTop = this.$.messages.scrollHeight;
+      },
+      shrink: function() {
+        var elm = this.$$('#body');
+        if(elm.classList.contains('body-tall')) {
+          elm.classList.remove('body-tall');
+          elm.classList.add('body-short');
+        }
+      },
+      onTapBody: function(e, detail, sender) {
+          this.$.msgTxt.focus();
+          this.onReadMessage();
+          this.fire('chat.item.focus', this.id);
+      },
+      onTapHeader: function(e, detail, sender) {
+        var elm = this.$$('#body');
+        if(elm.classList.contains('body-tall')) {
+            this.shrink();
+        } else {
+            this.expand();
+        }
+        this.$.msgTxt.focus();
+        this.fire('chat.item.focus', this.id);
+        this.onReadMessage();
+      },
+      onHold: function(e, detail, sender) {
+          if (e.target == this.$.profileimage || e.target == this.$.star) {
+            return;
+          }
+          this.selected = !this.selected;
+          this.$.profileimage.fire('tap');
+        }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,104 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../../bower_components/paper-item/paper-item.html" />
+<link rel="import" href="../weecollab-common/avatar.html" />
+
+<dom-module name="mail-content">
+<style is="custom-style">
+	:host {
+	}
+
+	.container {
+		margin-left: 10px;
+		margin-right: 10px;
+	}
+
+	.body {
+		margin-top: 15px;
+		font-size: 16px;
+	}
+
+	.separator {
+		margin-top: 10px;
+		margin-bottom: 10px;
+		background-color: #d1d1d1;
+		height:2px;
+		width: 100%;
+	}
+
+	.small {
+        --iron-icon-height: 18px;
+        --iron-icon-width: 18px;
+	}
+
+	paper-toolbar.red {
+		color: black;
+		--paper-toolbar-height: 48px;
+    	--paper-toolbar-background: transparent;
+	}
+
+	.title {
+		margin-left: 0px !important;
+	}
+</style>
+<template>
+	<div class="vertical container">
+		<!--<div class="horiz">-->
+			<!--<h4 style="border: solid 1px green;position: relative;display: block">{{thread.subject}}</h4>-->
+			<paper-toolbar class="red">
+				<div class="title">{{thread.subject}}</div>
+				<paper-item>
+					<iron-icon class="small" icon="reply"></iron-icon>
+				</paper-item>
+				<paper-item>
+					<iron-icon class="small" icon="reply-all"></iron-icon>
+				</paper-item>
+				<paper-item>
+					<iron-icon class="small" icon="forward"></iron-icon>
+				</paper-item>
+				<paper-item>
+					<iron-icon class="small" icon="delete"></iron-icon>
+				</paper-item>
+				<paper-item>
+					<iron-icon class="small" icon="flag"></iron-icon>
+				</paper-item>
+				<iron-icon class="small" icon="more-vert" style="margin-right: 20px"></iron-icon>
+			</paper-toolbar>
+		<!--</div>-->
+        <paper-item>
+            <avatar-item></avatar-item>
+            <div class="vertical" style="font-size: 14px">
+                <div>{{thread.from.name}}</div>
+                <div>{{thread.to}}</div>
+            </div>
+        </paper-item>
+        <div class="body">{{thread.body}}</div>
+        <div class="separator"></div>
+    </div>
+</template>
+<script>
+	Polymer({
+		is: "mail-content",
+		properties:{
+			thread: {
+				type: Object,
+				value: {
+						"id": "126685f53b63ce0c",
+						"snippet": "Welcome back guys",
+						"historyId": "11188",
+						"sizeEstimate": 4495,
+						"date": "Jan 26",
+						"to": "Eric Bidelman <ericbidelman@chromium.org>",
+						"subject": "Get started with Gmail",
+						"from": {
+							"name": "Gmail Team",
+							"email": "mail-noreply@google.com"
+						},
+						"unread": true,
+						"starred": false,
+						"body": "Thanks for sharing! What a great oppurtunity to present your success story. Do you guys want to meet to start outlining what we want to talk about? We only have a couple weeks so we need to move fast."
+				}
+			}
+		}
+	});
+</script>
+</dom-module>

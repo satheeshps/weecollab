@@ -1,0 +1,172 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html" />
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html" />
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../../../bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html" />
+<link rel="import" href="../../../bower_components/paper-header-panel/paper-header-panel.html" />
+<link rel="import" href="../../../bower_components/paper-toolbar/paper-toolbar.html" />
+<link rel="import" href="../../../bower_components/paper-drawer-panel/paper-drawer-panel.html" />
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../weecollab-common/pacifico.html">
+<link rel="import" href="chat-jar.html" />
+<link rel="import" href="roster-list.html" />
+
+<dom-module id="chat-client">
+  <template>
+    <style>
+      :host {
+        display: block;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .small {
+        --iron-icon-height: 22px;
+        --iron-icon-width: 22px;
+      }
+
+      .small-icon {
+          width:32px;
+          height:32px
+      }
+
+      .small-left-icon {
+        --iron-icon-height: 22px;
+        --iron-icon-width: 22px;
+        margin: 5px 0px 5px 6px;
+      }
+
+      .leftPane {
+          background: #0e4b7d;
+          border-color: #0e4b7d;
+      }
+
+      .middlePane {
+          background: #1666ad;
+          border-right: solid 1px #1666ad
+      }
+
+      .appName {
+          font-family: 'Pacifico', cursive;
+          font-size: 32px;
+          padding-top: 15px;
+          padding-bottom: 15px;
+      }
+      
+      paper-header-panel {
+        @apply(--shadow-elevation-4dp);
+      }
+    </style>
+    <paper-drawer-panel force-narrow="{{forceNarrow}}" flex drawer-width="270px" style="width: {{width}}">
+        <paper-header-panel mode="standard" drawer>
+            <paper-toolbar class="leftPane">
+                <paper-item>
+                    <iron-icon class="small-icon" src="../images/logo.png"></iron-icon>
+                    <div class="title">WeeCollab</div>
+                </paper-item>
+            </paper-toolbar>
+            <div class="vertical" style="height:95%">
+                <roster-list on-click-contact="{{add}}" contacts="[[friends.children]]" id="friends"></roster-list>
+            </div>
+        </paper-header-panel>
+        <paper-header-panel mode="standard" main>
+            <paper-toolbar class="middlePane">
+                <div on-tap="onTap" class="appName">Talky</div>
+                <div class="title"></div>
+                <paper-icon-button icon="event" id="calendar" on-click="onItemClick">
+                </paper-icon-button>
+                <paper-icon-button icon="mail" id="mail" on-click="onItemClick">
+                </paper-icon-button>
+                <paper-icon-button icon="account-box" id="contacts" on-click="onItemClick">
+                </paper-icon-button>
+                <paper-icon-button icon="more-vert">
+                </paper-icon-button>
+            </paper-toolbar>
+            <div class="vertical layout">
+                <chat-jar id="chatItems"></chat-jar>
+            </div>
+        </paper-header-panel>
+    </paper-drawer-panel>
+  </template>
+  <script>
+    
+    Polymer({
+      is: 'chat-client',
+      clicked: false,
+      properties: {
+          forceNarrow: false,
+          width: '100%',
+          friends: {
+              type: Object,
+              notify: true,
+              // value: {}
+              value: {
+                name: "iq",
+                attrs: {
+                    type: "result",
+                    from: "satheesh.sundaran@oracle.com",
+                    xmlns: "http://etherx.jabber.org/streams"
+                },
+                children: [{
+                        name: "query",
+                        attrs: {
+                            xmlns: "jabber:iq:roster"
+                        },
+                        children: [
+                            {
+                            name: "item",
+                            attrs: {
+                                jid: "karthik.kandasamy@oracle.com",
+                                name: "karthik.kandasamy@oracle.com",
+                                subscription: "both"
+                            },
+                            children: [
+                                {
+                                name: "group",
+                                attrs: {},
+                                children: [
+                                    "Buddies"
+                                ]
+                                }
+                            ]
+                            }
+                        ]
+                }]
+            }
+         }
+      },
+      onItemClick: function(e) {
+          var name = e.srcElement.parentElement.id;
+          this.clicked = !this.clicked;
+          this.fire('app.select', {name: name, selected: this.clicked});
+      },
+      ready: function() {
+          var self = this;
+          document.addEventListener('onopen', function () {
+          });
+          document.addEventListener('onerror', function (error) {
+          });
+          document.addEventListener('onmessage', function(data) {
+            var obj = JSON.parse(data.detail);
+            if(obj.name === 'iq' && obj.attrs.type === 'result')
+              self.friends = obj;
+            if(obj.name === 'message') {
+                var index = obj.children.findIndex(a => a.name === 'body');
+                if(index >= 0)
+                  self.$.chatItems.post(obj.attrs.from, obj.children[index].children[0], '12:30 PM');
+            }
+            if(obj.name === 'presence') {
+                self.fire('chat.contact.presence', {from: obj.attrs.from, type: obj.attrs.type});
+            }
+          });
+          document.addEventListener('contact.clicked', function (data) {
+            self.$.chatItems.add(data.detail.email);
+          });
+      },
+      onTap: function() {
+          this.fire('app.load', {name: 'chat'});
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,143 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html" />
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html" />
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html" />
+<link rel="import" href="../../../bower_components/paper-item/paper-icon-item.html" />
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html" />
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html" />
+<link rel="import" href="../../weecollab-common/profile-img.html" />
+
+<dom-module id="roster-list">
+<style>
+  :host {
+    display: block;
+    height: 100%;
+    font-family: 'Roboto', 'Noto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :host:hover {
+    cursor: pointer;
+  }
+  
+  .header {
+    --paper-toolbar-height: 46px;
+    /*--paper-toolbar-background:#0e4b7d;*/
+    --paper-toolbar-background: transparent;
+  }
+
+  paper-scroll-header-panel {
+    height: 100%;
+  }
+
+  .container-chat-friend {
+    padding: 6px 10px 6px 10px;
+    border: solid 0px black;
+    @apply(--layout-self-center);
+    @apply(--layout-horizontal);
+    /*@apply(--layout-flex);*/
+  }
+
+  .searchbar {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .from {
+    font-size: 14px;
+    margin-left: 10px;
+    margin-right: 10px;
+    @apply(--layout-self-center);
+  }
+
+  .contacts {
+    font-size: 16px;
+  }
+</style>
+<template>
+  <div id="root">
+    <paper-toolbar class="header" flex>
+      <paper-input class="searchbar"></paper-input>
+      <!--<paper-icon-button self-end icon="search"></paper-icon-button>-->
+    </paper-toolbar>
+    <div id="top" on-tap="onTap">
+      <template is="dom-repeat" items="[[contacts]]">
+        <template is="dom-repeat" items="[[item.children]]">
+          <div class="container-chat-friend" id="container_{{genId(item.attrs.name)}}">
+            <profile-img self-center id="profileimage_{{genId(item.attrs.name)}}" letter="A"></profile-img>
+            <span id="from_{{genId(item.attrs.name)}}" class="from">[[item.attrs.name]]</span>
+          </div>
+          <!--<paper-icon-item id="{{index}}" on-tap="onTap">
+            <div class="avatar blue" item-icon></div>
+            <paper-item-body id="from">
+              <div>[[item.attrs.name]]</div>
+              <div secondary>{{chat.date}}</div>
+            </paper-item-body>
+          </paper-icon-item>-->
+        </template>
+      </template>
+    </div>
+  </div>
+</template>
+<script>
+	Polymer({
+		is: "roster-list",
+		properties: {
+			contacts: {
+        type: Array,
+        notify: true,
+        value: []
+      }
+    },
+    genId: function(from) {
+      id = from.indexOf('@') >= 0 ? from.substring(0, from.indexOf('@')) : from;
+      return id.replace(new RegExp(/\./g), '_');
+    },
+		ready: function() {
+      var self = this;
+      document.addEventListener('chat.contact.presence', function(data) {
+        var nfrom = data.detail.from.indexOf('@') >= 0 ? data.detail.from.substring(0, data.detail.from.indexOf('@')) : data.detail.from;
+        var ntype = data.detail.type;
+        if (ntype === undefined || ntype === null || ntype === '')
+          ntype = 'available';
+        
+        if(self.$$('#profileimage_' + self.genId(nfrom)) !== null && self.$$('#profileimage_' + self.genId(nfrom)) !== undefined) {
+          self.$$('#profileimage_' + self.genId(nfrom)).bkcolor = ntype === 'unavailable' ? '#9e9e9e' : 'green';
+        }
+      });
+		},
+		onTap: function(e, detail, sender) {
+	      // Profile image is the only thing that selects a thread.
+	      // if (e.target != this.$.profileimage) {
+	        // e.stopPropagation();
+	      // }
+        var indexStr;
+        if(e.srcElement.id.indexOf('from_') == 0)
+         indexStr = e.srcElement.id.substring(e.srcElement.id.indexOf('from_') + 5);
+        else {
+          if(e.srcElement.id.indexOf('profileimage_') == 0)
+            indexStr = e.srcElement.id.substring(e.srcElement.id.indexOf('profileimage_') + 13);
+          else {
+            if(e.srcElement.id.indexOf('container_') == 0)
+              indexStr = e.srcElement.id.substring(e.srcElement.id.indexOf('container_') + 10);
+          }
+        }
+        var found = this.contacts[0].children.findIndex(a => (a.attrs.name.indexOf('@') >= 0 ? a.attrs.name.substring(0, a.attrs.name.indexOf('@')).replace(/\./g, '_') : a.attrs.name.replace(/\./g, '_')) === indexStr);
+        found = this.contacts[0].children[found];
+        var email = found.attrs.jid,
+            user = found.attrs.name;
+        this.fire('contact.clicked', {user: user, email: email});
+	  }
+        // _toArray: function(obj) {
+        //     return Object.keys(obj).map(function(key) {
+        //         return {
+        //             name: key,
+        //             value: obj[key]
+        //         };
+        //     });
+        // }
+	});
+</script>
+</dom-module>

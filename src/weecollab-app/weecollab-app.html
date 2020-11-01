@@ -1,0 +1,129 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+
+<link rel="import" href="../email-client/email-client.html">
+<link rel="import" href="../calendar-client/calendar-client.html">
+<link rel="import" href="../chat-client/client/chat-client.html">
+<link rel="import" href="../contacts-client/client/contacts-client.html">
+<link rel="import" href="../weecollab-common/ws-client.html">
+<link rel="import" href="../weecollab-common/avatar.html">
+
+<dom-module id="weecollab-app">
+  <template>
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-positioning">
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .appRoot {
+        @apply(--layout-flex);
+        @apply(--layout-horizontal);
+      }
+    </style>
+    <div class="appRoot" id="appRoot">
+      <ws-client id="ws-client"></ws-client>
+      <paper-drawer-panel id="drawer" flex drawer-width="400px" right-drawer>
+        <paper-header-panel id="weeRightDrawer" mode="standard" drawer>
+        </paper-header-panel>
+        <paper-header-panel id="main" mode="standard" class="flex" main>
+        </paper-header-panel>
+      </paper-drawer-panel>
+    </div>
+  </template>
+  
+  <script>
+    Polymer({
+      is: 'weecollab-app',
+      properties: {
+        prop1: {
+          type: String,
+          value: 'weecollab-app',
+        },
+        mainApp: 'mail'
+      },
+      ready: function() {
+        this.listen(this, 'app.select', 'onAppSelect');
+        this.listen(this, 'app.load', 'onAppLoad');
+        this.$.drawer.forceNarrow = true;
+        
+        var search = window.location.search;
+        var type = 'mail';
+
+        if(search.length > 0) {
+          type = search.substring(6);
+        }
+
+        var elm;
+        if(type === 'mail') {
+          elm = document.createElement('email-client');
+          elm.id = "emailApp";
+        } else {
+          if(type === 'calendar') {
+            elm = document.createElement('calendar-client');
+            elm.id = "calendarApp";
+          } else {
+            if(type === 'chat') {
+              elm = document.createElement('chat-client');
+              elm.id = "chatApp";
+            } else {
+              if(type === 'contacts') {
+                elm = document.createElement('contacts-client');
+                elm.id = "contactsApp";
+              }
+            }
+          }
+        }
+        this.$.main.appendChild(elm);
+      },
+      onAppLoad: function(data) {
+        window.location = 'index.html?type=' + data.detail.name;
+      },
+      onAppSelect: function(data) {
+        var parent = this.$.weeRightDrawer;
+        if(data.detail.selected) {
+          var elm;
+          if(data.detail.name === 'mail') {
+            elm = document.createElement('email-client');
+            elm.id = "emailApp";
+            elm.forceNarrow = true;
+          } else {
+            if(data.detail.name === 'calendar') {
+              elm = document.createElement('calendar-client');
+              elm.id = "calendarApp";
+              elm.forceNarrow = true;
+            } else {
+              if(data.detail.name === 'contacts') {
+                elm = document.createElement('contacts-client');
+                elm.id = "contactsApp";
+                elm.forceNarrow = true;
+              } else {
+                if(data.detail.name === 'chat') {
+                  elm = document.createElement('chat-client');
+                  elm.id = "chatApp";
+                  elm.forceNarrow = true;
+                }
+              }
+            }
+          }
+          this.$.drawer.forceNarrow = true;
+          if(elm !== undefined && elm !== null) {
+            var len = parent.children.length;
+            for(var index = 0;index < len;index++) {
+              if(parent.childNodes[index] instanceof Node)
+                parent.removeChild(parent.childNodes[index]);
+            }
+            parent.appendChild(elm);
+          }
+        }
+        this.toggle();
+      },
+      toggle: function() {
+        this.$.drawer.forceNarrow = !this.$.drawer.forceNarrow;
+      }
+    });
+  </script>
+</dom-module>

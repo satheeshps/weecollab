@@ -1,0 +1,116 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html" />
+
+<dom-module id="callout-bubble">
+    <style>
+    :host {
+        display: block;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    .chat {
+      /*--paper-item-min-height: 25px;*/
+      padding: 5px 10px 5px 10px;
+      margin: 7px 0px 0px 0px;
+    }
+
+    .date {
+        border-top: 0px solid;
+        font-size: 10px;
+        font-style: italic;
+        font-color: grey;
+    }
+
+    .left-align {
+        @apply(--layout-horizontal);
+        @apply(--layout-start-justified);
+    }
+
+    .right-align {
+        @apply(--layout-horizontal);
+        @apply(--layout-end-justified);
+    }
+
+    .notch-left {
+      height: 0px;
+      width: 0px;
+      margin-top: 7px;
+      border-top: 8px solid transparent;
+      border-right: 15px solid yellow;
+      border-left: 0px solid transparent;
+      border-bottom: 0px solid transparent;
+      box-shadow:0 2px 0px 0 rgba(0, 0, 0, 0.14),
+                0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                0 3px 1px -2px rgba(0, 0, 0, 0.2)
+    }
+
+    .notch-right {
+      height: 0px;
+      width: 0px;
+      margin-top: 7px;
+      border-top: 8px solid transparent;
+      border-right: 0px solid transparent;
+      border-left: 15px solid yellow;
+      border-bottom: 0px solid transparent;
+      box-shadow:0 2px 0px 0 rgba(0, 0, 0, 0.14),
+                0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                0 3px 1px -2px rgba(0, 0, 0, 0.2)
+    }
+
+    .align {
+        @apply(--layout-self-end);
+    }
+
+    </style>
+    <template>
+        <div id="container" class$="{{getAlign(orient)}}">
+            <template is="dom-if" if="{{isLeft(orient)}}">
+                <div class="notch-left" style="border-right-color: {{color}}"></div>
+            </template>
+            <div vertical layout>
+                <paper-material class="chat" style="background-color: {{color}}">
+                    <span>[[message]]</span>
+                </paper-material>
+                <paper-material class="date" style="background-color: {{color}};padding-left: 10px;padding-right: 10px;padding-bottom: 5px">
+                    <span class="align">[[date]]</span>
+                </paper-material>
+            </div>
+            <template is="dom-if" if="{{isRight(orient)}}">
+                <div class="notch-right" style="border-left-color: {{color}}"></div>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'callout-bubble',
+            properties: {
+                message: String,
+                date: String,
+                orient: {
+                    type: String,
+                    value: 'left'
+                },
+                color: {
+                    type: String,
+                    value: 'orange'
+                },
+            },
+            getAlign: function(o) {
+                if(this.isLeft(o))
+                    ret = 'left-align';
+                if(this.isRight(o))
+                    ret = 'right-align';
+                return ret;
+            },
+            isLeft: function(o) {
+                return o === 'left'
+            },
+            isRight: function(o) {
+                return o === 'right'
+            },
+            ready: function() {
+            }
+        });
+    </script>
+</dom-module>

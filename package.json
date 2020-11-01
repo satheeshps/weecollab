@@ -1,0 +1,23 @@
+{
+  "name": "weecollab",
+  "version": "1.0.0",
+  "description": "A collaboration tool for office",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Satheesh Sundaran",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^3.0.5",
+    "grunt": "^1.0.1",
+    "node-xmpp-client": "^3.0.1",
+    "ws": "^1.1.0",
+    "nodemailer": "^2.5.0",
+    "imap": "^0.8.17"
+  },
+  "dependencies": {
+    "ldapjs": "^1.0.0"
+  }
+}

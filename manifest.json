@@ -1,0 +1,7 @@
+{
+  "name": "weecollab",
+  "short_name": "weecollab",
+  "description": "A collaboration tool for office",
+  "start_url": "/",
+  "display": "standalone"
+}

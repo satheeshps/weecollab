@@ -1,0 +1,33 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html" />
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="label-item">
+<style>
+	#label {
+		margin-left: 10px;
+	}
+</style>
+<template>
+	<paper-item>
+        <iron-icon icon="{{icon}}"></iron-icon>
+        <div id="label">{{label}}</div>
+    </paper-item>
+</template>
+<script>
+	Polymer({
+		is: "label-item",
+		properties: {
+			icon: {
+				type: String,
+				value: "inbox"
+			},
+			label: {
+				type: String,
+				value: "Inbox"
+			}
+		}
+	});
+</script>
+</dom-module>
